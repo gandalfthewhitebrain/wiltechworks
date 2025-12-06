@@ -6,7 +6,6 @@ export async function fetchDrupalArticleBySlug(
   slug: string
 ): Promise<DrupalArticle | null> {
   try {
-    // Fetch all articles
     const res = await fetch(`${DRUPAL_BASE_URL}/jsonapi/node/article`, {
       next: { revalidate: 60 },
     });
@@ -21,11 +20,17 @@ export async function fetchDrupalArticleBySlug(
     }
 
     const data = await res.json();
+
+    if (!data || !Array.isArray(data.data)) {
+      console.error("Unexpected Drupal article response shape:", data);
+      return null;
+    }
+
     const articles = data.data as DrupalArticle[];
 
-    // Find the one with alias like /articles/head-turner1
+    // Look for alias like /articles/head-turner1
     const article = articles.find((item) => {
-      const alias = item.attributes.path?.alias;
+      const alias = item.attributes?.path?.alias;
       if (!alias) return false;
       return alias.endsWith(`/articles/${slug}`);
     });

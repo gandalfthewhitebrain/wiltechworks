@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { fetchDrupalArticles } from "@/lib/fetchDrupalArticles";
 
-export const revalidate = 60; // ISR every 60 seconds
+export const revalidate = 60;
 
 export default async function HomePage() {
   const articles = await fetchDrupalArticles();
@@ -12,12 +12,14 @@ export default async function HomePage() {
       <h1 className="text-3xl font-bold mb-6">WilTechWorks Articles</h1>
 
       {articles.length === 0 && (
-        <p className="text-gray-500">No articles found.</p>
+        <p className="text-gray-500">
+          No articles found or unable to load from Drupal.
+        </p>
       )}
 
       <ul className="space-y-4">
         {articles.map((article) => {
-          const alias = article.attributes.path?.alias;
+          const alias = article.attributes?.path?.alias;
           const slug = alias ? alias.split("/").pop() : article.id;
 
           return (

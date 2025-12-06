@@ -6,25 +6,40 @@ export type DrupalArticle = {
   attributes: {
     title: string;
     created: string;
-    path?: {
-      alias?: string;
-    };
     body?: {
       value?: string;
+    };
+    path?: {
+      alias?: string;
     };
   };
 };
 
 export async function fetchDrupalArticles(): Promise<DrupalArticle[]> {
-  const res = await fetch(`${DRUPAL_BASE_URL}/jsonapi/node/article`, {
-    // Incremental static regeneration: revalidate every 60s
-    next: { revalidate: 60 },
-  });
+  try {
+    const res = await fetch(`${DRUPAL_BASE_URL}/jsonapi/node/article`, {
+      next: { revalidate: 60 },
+    });
 
-  if (!res.ok) {
-    throw new Error(`Failed to fetch articles: ${res.status}`);
+    if (!res.ok) {
+      console.error(
+        "Failed to fetch articles from Drupal:",
+        res.status,
+        res.statusText
+      );
+      return [];
+    }
+
+    const data = await res.json();
+
+    if (!data || !Array.isArray(data.data)) {
+      console.error("Unexpected Drupal articles response shape:", data);
+      return [];
+    }
+
+    return data.data as DrupalArticle[];
+  } catch (error) {
+    console.error("Error in fetchDrupalArticles:", error);
+    return [];
   }
-
-  const data = await res.json();
-  return data.data as DrupalArticle[];
 }
