@@ -20,6 +20,7 @@ export default async function HomePage() {
       <ul className="space-y-4">
         {articles.map((article) => {
           const alias = article.attributes?.path?.alias;
+          // Alias like /articles/head-turner1 → slug = "head-turner1"
           const slug = alias ? alias.split("/").pop() : article.id;
 
           return (

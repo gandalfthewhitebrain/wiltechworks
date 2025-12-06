@@ -17,8 +17,10 @@ export type DrupalArticle = {
 
 export async function fetchDrupalArticles(): Promise<DrupalArticle[]> {
   try {
-    const res = await fetch(`${DRUPAL_BASE_URL}/jsonapi/node/article`, {
-      next: { revalidate: 60 },
+    const url = `${DRUPAL_BASE_URL}/jsonapi/node/article?sort=-created`;
+
+    const res = await fetch(url, {
+      next: { revalidate: 60 }, // ISR – refresh list every 60s
     });
 
     if (!res.ok) {

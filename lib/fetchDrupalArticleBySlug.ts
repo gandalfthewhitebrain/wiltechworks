@@ -6,8 +6,10 @@ export async function fetchDrupalArticleBySlug(
   slug: string
 ): Promise<DrupalArticle | null> {
   try {
-    const res = await fetch(`${DRUPAL_BASE_URL}/jsonapi/node/article`, {
-      next: { revalidate: 60 },
+    const url = `${DRUPAL_BASE_URL}/jsonapi/node/article?sort=-created`;
+
+    const res = await fetch(url, {
+      next: { revalidate: 60 }, // ISR – refresh every 60s
     });
 
     if (!res.ok) {
@@ -28,11 +30,11 @@ export async function fetchDrupalArticleBySlug(
 
     const articles = data.data as DrupalArticle[];
 
-    // Look for alias like /articles/head-turner1
+    // Find article whose alias is exactly /articles/<slug>
     const article = articles.find((item) => {
       const alias = item.attributes?.path?.alias;
       if (!alias) return false;
-      return alias.endsWith(`/articles/${slug}`);
+      return alias === `/articles/${slug}`;
     });
 
     if (!article) {
