@@ -5,21 +5,39 @@ import type { DrupalArticle } from "./fetchDrupalArticles";
 export async function fetchDrupalArticleBySlug(
   slug: string
 ): Promise<DrupalArticle | null> {
-  const url = new URL(`${DRUPAL_BASE_URL}/jsonapi/node/article`);
+  try {
+    // Fetch all articles
+    const res = await fetch(`${DRUPAL_BASE_URL}/jsonapi/node/article`, {
+      next: { revalidate: 60 },
+    });
 
-  // Adjust this if your aliases are like /blog/slug instead of /articles/slug
-  url.searchParams.set("filter[path][value]", `/articles/${slug}`);
-  url.searchParams.set("filter[path][operator]", "=");
+    if (!res.ok) {
+      console.error(
+        "Failed to fetch articles from Drupal:",
+        res.status,
+        res.statusText
+      );
+      return null;
+    }
 
-  const res = await fetch(url.toString(), {
-    next: { revalidate: 60 },
-  });
+    const data = await res.json();
+    const articles = data.data as DrupalArticle[];
 
-  if (!res.ok) {
-    throw new Error(`Failed to fetch article by slug: ${res.status}`);
+    // Find the one with alias like /articles/head-turner1
+    const article = articles.find((item) => {
+      const alias = item.attributes.path?.alias;
+      if (!alias) return false;
+      return alias.endsWith(`/articles/${slug}`);
+    });
+
+    if (!article) {
+      console.warn("No Drupal article found for slug:", slug);
+      return null;
+    }
+
+    return article;
+  } catch (error) {
+    console.error("Error in fetchDrupalArticleBySlug:", error);
+    return null;
   }
-
-  const data = await res.json();
-  const article = (data.data as DrupalArticle[])[0];
-  return article || null;
 }
