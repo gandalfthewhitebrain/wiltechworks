@@ -1,5 +1,5 @@
 // app/api-view/page.tsx
-import { fetchDrupalViewAbc123 } from "../../lib/fetchDrupalViewAbc123";
+import { fetchDrupalViewAbc123 } from "../../lib/fetchDrupalViewAbc123"; 
 
 export const dynamic = "force-dynamic";
 
