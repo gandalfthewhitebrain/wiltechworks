@@ -12,7 +12,7 @@ const DRUPAL_VIEW_URL =
 
 export async function fetchDrupalViewAbc123(): Promise<DrupalViewRow[]> {
   const res = await fetch(DRUPAL_VIEW_URL, {
-    cache: "no-store", // or: next: { revalidate: 60 }
+    cache: "no-store",
   });
 
   if (!res.ok) {
